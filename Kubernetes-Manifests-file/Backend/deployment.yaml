@@ -14,12 +14,16 @@ spec:
       labels:
         app: backend
     spec:
+      serviceAccountName: backend-sa
       containers:
         - name: backend
           image: pranavhude/backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: db-secrets
           env:
             - name: DB_HOST
               value: "<RDS_ENDPOINT>"

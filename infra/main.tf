@@ -26,3 +26,12 @@ module "rds" {
   db_user         = var.db_user
   db_password     = var.db_password
 }
+
+module "db_secrets" {
+  source = "./modules/secrets"
+
+  db_host     = module.rds.endpoint
+  db_name     = "appdb"
+  db_user     = "admin"
+  db_password = var.db_password
+}

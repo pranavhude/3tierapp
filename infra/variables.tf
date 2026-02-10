@@ -11,5 +11,7 @@ variable "private_subnets" {}
 variable "db_name" {}
 variable "db_user" {}
 variable "db_password" {
+  type      = string
   sensitive = true
 }
+
