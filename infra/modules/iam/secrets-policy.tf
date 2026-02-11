@@ -7,9 +7,7 @@ resource "aws_iam_policy" "secrets_manager_access" {
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
+        Action = ["secretsmanager:GetSecretValue"]
         Resource = var.secret_arn
       }
     ]
