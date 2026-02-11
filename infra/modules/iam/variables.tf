@@ -10,7 +10,4 @@ variable "secret_arn" {
   type = string
 }
 
-variable "secret_arn" {
-  type        = string
-  description = "ARN of Secrets Manager secret"
-}
+
