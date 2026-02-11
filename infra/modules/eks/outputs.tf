@@ -9,3 +9,7 @@ output "oidc_provider_url" {
     ""
   )
 }
+
+output "cluster_name" {
+  value = aws_eks_cluster.this.name
+}
