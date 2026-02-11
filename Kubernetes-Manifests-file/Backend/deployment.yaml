@@ -26,7 +26,7 @@ spec:
                 name: db-secrets
           env:
             - name: DB_HOST
-              value: "<RDS_ENDPOINT>"
+              value: "terraform-20260211091949290300000008.cbao6uqe0ob0.ap-south-1.rds.amazonaws.com:3306"
             - name: DB_PORT
               value: "3306"
             - name: DB_NAME
