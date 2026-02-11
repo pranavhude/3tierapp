@@ -10,7 +10,7 @@ resource "aws_iam_policy" "secrets_manager_access" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Resource = module.db_secrets.secret_arn
+        Resource = var.secret_arn
       }
     ]
   })
