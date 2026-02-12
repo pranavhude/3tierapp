@@ -1,37 +1,57 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata:
-  name: backend
-  labels:
-    app: backend
-spec:
+metadata: 
+  name: api
+  namespace: three-tier
+  labels: 
+    role: api
+    env: demo
+spec: 
   replicas: 2
-  selector:
+  strategy: 
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector: 
     matchLabels:
-      app: backend
+      role: api
   template:
     metadata:
       labels:
-        app: backend
+        role: api
     spec:
-      serviceAccountName: backend-sa
+      imagePullSecrets:
+      - name: ecr-registry-secret
       containers:
-        - name: backend
-          image: pranavhude/backend:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-          envFrom:
-            - secretRef:
-                name: db-secrets
-          env:
-            - name: DB_HOST
-              value: "terraform-20260211091949290300000008.cbao6uqe0ob0.ap-south-1.rds.amazonaws.com:3306"
-            - name: DB_PORT
-              value: "3306"
-            - name: DB_NAME
-              value: "appdb"
-            - name: DB_USER
-              value: "admin"
-            - name: DB_PASSWORD
-              value: "password"
+      - name: api
+        image: 407622020962.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+        imagePullPolicy: Always
+        env:
+          - name: MONGO_CONN_STR
+            value: mongodb://mongodb-svc:27017/todo?directConnection=true
+          - name: MONGO_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongo-sec
+                key: username
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongo-sec
+                key: password
+        ports:
+        - containerPort: 3500
+        livenessProbe: 
+          httpGet:
+            path: /ok
+            port: 3500
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ok
+            port: 3500
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1

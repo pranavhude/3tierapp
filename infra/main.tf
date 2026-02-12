@@ -21,20 +21,4 @@ module "eks" {
   node_role       = module.iam.node_role_arn
 }
 
-module "rds" {
-  source          = "./modules/rds"
-  vpc_id          = module.vpc.vpc_id
-  subnet_ids      = module.vpc.private_subnets
-  db_name         = var.db_name
-  db_user         = var.db_user
-  db_password     = var.db_password
-}
 
-module "db_secrets" {
-  source = "./modules/secrets"
-
-  db_host     = module.rds.endpoint
-  db_name     = "appdb"
-  db_user     = "admin"
-  db_password = var.db_password
-}
