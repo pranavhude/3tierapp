@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
-  name: api
+  name: backend
   namespace: three-tier
   labels: 
     role: api
@@ -24,7 +24,7 @@ spec:
       imagePullSecrets:
       - name: ecr-registry-secret
       containers:
-      - name: api
+      - name: backend
         image: pranavhude/backend:latest
         imagePullPolicy: Always
         env:
