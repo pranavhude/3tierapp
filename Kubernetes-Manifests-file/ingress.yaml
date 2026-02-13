@@ -19,3 +19,10 @@ spec:
                 name: frontend
                 port:
                   number: 3000
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 3500
