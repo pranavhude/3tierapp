@@ -1,0 +1,47 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-infra-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: infra.rules
+      rules:
+
+        - alert: NodeHighCPU
+          expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node CPU usage > 90%"
+            description: "Node CPU usage is above 90% for 5 minutes."
+
+        - alert: NodeHighMemory
+          expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node memory almost full"
+            description: "Available memory is less than 10%."
+
+        - alert: PodCrashLoop
+          expr: increase(kube_pod_container_status_restarts_total[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod restarting frequently"
+            description: "Pod restarted more than 3 times in 5 minutes."
+
+        - alert: NodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node Not Ready"
+            description: "A Kubernetes node is not in Ready state."
