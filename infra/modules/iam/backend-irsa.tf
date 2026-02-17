@@ -12,7 +12,7 @@ resource "aws_iam_role" "backend_irsa" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${var.oidc_provider_url}:sub" = "system:serviceaccount:default:backend-sa"
+            "${var.oidc_provider_url}:sub" = "system:serviceaccount:three-tier:backend-sa"
           }
         }
       }
