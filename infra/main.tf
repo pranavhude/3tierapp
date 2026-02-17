@@ -15,7 +15,10 @@ module "iam" {
 module "eks" {
   source          = "./modules/eks"
   vpc_id          = module.vpc.vpc_id
-  subnet_ids      = module.vpc.private_subnets
+
+  public_subnets  = module.vpc.public_subnets
+  private_subnets = module.vpc.private_subnets
+
   cluster_role    = module.iam.cluster_role_arn
   node_role       = module.iam.node_role_arn
 }

@@ -1,31 +1,32 @@
+# -----------------------
+# EKS Cluster
+# -----------------------
 resource "aws_eks_cluster" "this" {
-  name     = "prod-eks"
+  name     = var.cluster_name
   role_arn = var.cluster_role
 
   vpc_config {
-    subnet_ids = var.subnet_ids
+    subnet_ids = concat(var.public_subnets, var.private_subnets)
   }
+
+  depends_on = []
 }
 
+# -----------------------
+# EKS Node Group
+# -----------------------
 resource "aws_eks_node_group" "nodes" {
   cluster_name    = aws_eks_cluster.this.name
-  node_role_arn  = var.node_role
-  subnet_ids     = var.subnet_ids
+  node_role_arn   = var.node_role
+  subnet_ids      = var.private_subnets
 
   scaling_config {
     desired_size = 2
     min_size     = 1
     max_size     = 3
   }
-}
 
+  instance_types = ["t3.medium"]
 
-data "tls_certificate" "oidc" {
-  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
-resource "aws_iam_openid_connect_provider" "oidc" {
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.oidc.certificates[0].sha1_fingerprint]
-  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
+  depends_on = [aws_eks_cluster.this]
 }
