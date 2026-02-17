@@ -2,6 +2,7 @@ module "vpc" {
   source          = "./modules/vpc"
   vpc_cidr        = var.vpc_cidr
   azs             = var.azs
+  cluster_name = var.cluster_name
 }
 
 module "iam" {
