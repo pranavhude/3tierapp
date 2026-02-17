@@ -7,7 +7,7 @@ resource "aws_iam_role" "backend_irsa" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = var.oidc_provider_arn
+          Federated = data.aws_iam_openid_connect_provider.existing.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
