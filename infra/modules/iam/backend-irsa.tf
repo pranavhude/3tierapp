@@ -7,12 +7,14 @@ resource "aws_iam_role" "backend_irsa" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = data.aws_iam_openid_connect_provider.existing.arn
+          Federated = var.oidc_provider_arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${var.oidc_provider_url}:sub" = "system:serviceaccount:three-tier:backend-sa"
+            "${var.oidc_provider_url}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+
+            "${var.oidc_provider_url}:aud" = "sts.amazonaws.com"
           }
         }
       }
