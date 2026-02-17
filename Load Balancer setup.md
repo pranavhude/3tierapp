@@ -20,8 +20,6 @@ aws eks describe-cluster --name prod-eks --region ap-south-1 --query "cluster.id
 
 Now associate (safe to run even if already associated):
 
-
-
 eksctl utils associate-iam-oidc-provider --region ap-south-1 --cluster prod-eks --approve
 
 --------------------------------------------------------------
@@ -30,13 +28,28 @@ eksctl utils associate-iam-oidc-provider --region ap-south-1 --cluster prod-eks 
 
 Check:
 
-aws iam list-policies --query "Policies[?PolicyName=='AWSLoadBalancerControllerIAMPolicy']"
+aws iam list-policies \
+  --scope Local \
+  --query "Policies[?PolicyName=='AWSLoadBalancerControllerIAMPolicy'].Arn" \
+  --output text
 
+If this returns an ARN  Policy already exists → DO NOT create again If this returns empty
+
+Then create it.
 
 If empty → create it:
 
+download policy
 
-curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam\_policy.json
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+
+
+
+create policy
+
+aws iam create-policy \
+  --policy-name AWSLoadBalancerControllerIAMPolicy \
+  --policy-document file://iam_policy.json
 
 
 check policy if already exist
@@ -45,10 +58,6 @@ aws iam list-policies \
   --scope Local \
   --query "Policies[?PolicyName=='AWSLoadBalancerControllerIAMPolicy'].Arn" \
   --output text
-
-
-aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam\_policy.json
-
 --------------------------------------------------------------
 
 
@@ -78,20 +87,31 @@ helm repo update
 
 aws eks describe-cluster --name prod-eks --region ap-south-1 --query "cluster.resourcesVpcConfig.vpcId" --output text
 
-
 -------------------------------------------------------------
 
 **STEP 7 — Install AWS Load Balancer Controller (Correct Way)**
 
+Since service account was created using eksctl,
+you MUST use --set serviceAccount.create=false
 
+VPC_ID=$(aws eks describe-cluster \
+  --name prod-eks \
+  --region ap-south-1 \
+  --query "cluster.resourcesVpcConfig.vpcId" \
+  --output text)
 
-DO NOT use serviceAccount.create=false
-
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=prod-eks --set region=ap-south-1 --set vpcId=vpc-03dacc851a5ef2970 --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
-
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=prod-eks \
+  --set region=ap-south-1 \
+  --set vpcId=$VPC_ID \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
 
 -------------------------------------------------------------
 
 **STEP 8 — Verify Controller**
 
 kubectl get pods -n kube-system
+
+kubectl logs -n kube-system deployment/aws-load-balancer-controller | grep -i error
