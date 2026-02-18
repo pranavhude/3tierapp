@@ -3,10 +3,10 @@ kind: ClusterRoleBinding
 metadata:
   name: support-readonly-binding
 subjects:
-- kind: Group
-  name: support-group
+- kind: User
+  name: support-user
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
-  name: support-readonly-cluster
+  name: support-readonly
   apiGroup: rbac.authorization.k8s.io
