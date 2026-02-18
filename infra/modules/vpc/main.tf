@@ -64,7 +64,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = "public-rt"
+    Name = "public-rt-${var.cluster_name}"
   }
 }
 
@@ -72,10 +72,12 @@ resource "aws_route" "public_internet" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.this.id
+
+  depends_on = [aws_internet_gateway.this]
 }
 
 resource "aws_route_table_association" "public_assoc" {
-  count          = length(var.azs)
+  count          = length(aws_subnet.public)
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
@@ -85,6 +87,7 @@ resource "aws_route_table_association" "public_assoc" {
 # -----------------------
 resource "aws_eip" "nat" {
   domain = "vpc"
+  depends_on = [aws_internet_gateway.this]
 }
 
 resource "aws_nat_gateway" "this" {
@@ -105,7 +108,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = "private-rt"
+    Name = "private-rt-${var.cluster_name}"
   }
 }
 
@@ -116,7 +119,7 @@ resource "aws_route" "private_nat" {
 }
 
 resource "aws_route_table_association" "private_assoc" {
-  count          = length(var.azs)
+  count          = length(aws_subnet.private)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
