@@ -63,6 +63,15 @@ aws iam list-policies \
 
 **STEP 4 — Create IAM Service Account**
 
+# Check if ServiceAccount already exists
+kubectl get sa aws-load-balancer-controller -n kube-system
+
+# Check if IAM role already exists
+aws iam get-role --role-name AmazonEKSLoadBalancerControllerRole
+
+# Delete it first:
+kubectl delete sa aws-load-balancer-controller -n kube-system
+
 eksctl create iamserviceaccount --cluster prod-eks --region ap-south-1 --namespace kube-system --name aws-load-balancer-controller --attach-policy-arn arn:aws:iam::322172729886:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
 
 
@@ -115,3 +124,67 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 kubectl get pods -n kube-system
 
 kubectl logs -n kube-system deployment/aws-load-balancer-controller | grep -i error
+
+-------------------------------------------------------------
+
+**step 9 Deploy Your Application (3-Tier)**
+
+Apply namespace first:
+
+cd Kubernetes-Manifests-files
+
+kubectl apply -f namespace.yaml
+
+Apply manifests:
+
+cd Database
+kubectl apply -f .
+
+cd Backend
+kubectl apply -f .
+
+cd Frontend
+kubectl apply -f .
+
+
+Verify:
+
+kubectl get pods -n three-tier
+
+
+All should be Running.
+
+--------------------------------------------------------------
+
+**STEP 10 — Apply Ingress (ALB)**
+
+Apply ingress:
+
+kubectl apply -f ingress.yaml -n three-tier
+
+
+Check:
+
+kubectl get ingress -n three-tier
+
+
+-------------------------------------------------------------
+
+**STEP 11 — Validate ALB In AWS**
+
+aws elbv2 describe-load-balancers --region ap-south-1
+
+You should see new ALB.
+
+Test Application
+
+Open:
+
+http://<ALB-DNS>
+
+
+Frontend loads.
+
+Test backend API path:
+
+http://<ALB-DNS>/api/tasks
